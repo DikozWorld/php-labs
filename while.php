@@ -24,7 +24,7 @@
     $i = 0;
     
     while ($i < strlen($var)) {
-        $value = $var[i];
+        $value = $var[$i];
         echo "$value<br>";
         $i = $i + 1;
     }
