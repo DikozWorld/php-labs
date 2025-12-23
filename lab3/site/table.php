@@ -1,12 +1,20 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Таблица умножения</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="table.css">
 </head>
+
+<?php
+      include 'inc/lib.inc.php';
+      include 'inc/data.inc.php';
+?>
+
 <body>
   <header>
     <!-- Верхняя часть страницы -->
@@ -31,53 +39,22 @@
       <label>Цвет: </label>
       <br>
       <input name='color' type='color' value='#ff0000' list="listColors">
-	<datalist id="listColors">
-		<option>#ff0000</option>/>
-		<option>#00ff00</option>
-		<option>#0000ff</option>
-	</datalist>
+      <datalist id="listColors">
+        <option>#ff0000</option>/>
+        <option>#00ff00</option>
+        <option>#0000ff</option>
+      </datalist>
       <br>
       <br>
       <input type='submit' value='Создать'>
     </form>
     <br>
     <!-- Таблица -->
-    <table>
-      <tr>
-        <td>1</td>
-        <td>2</td>
-        <td>3</td>
-        <td>4</td>
-        <td>5</td>
-      </tr>
-      <tr>
-        <td>2</td>
-        <td>4</td>
-        <td>6</td>
-        <td>8</td>
-        <td>10</td>
-      </tr>
-      <tr>
-        <td>3</td>
-        <td>6</td>
-        <td>9</td>
-        <td>12</td>
-        <td>15</td>
-      </tr>
-      <tr>
-        <td>4</td>
-        <td>8</td>
-        <td>12</td>
-        <td>16</td>
-        <td>10</td>
-      </tr>
-      <tr>
-        <td>5</td>
-        <td>10</td>
-        <td>15</td>
-        <td>20</td>
-        <td>25</td>
-      </tr>
+
+    <table class="mult-table">
+      <?php
+      getTable((int) $cols, (int) $rows, $color);
+      ?>
     </table>
     <!-- Таблица -->
     <!-- Область основного контента -->
@@ -85,13 +62,9 @@
   <nav>
     <h2>Навигация по сайту</h2>
     <!-- Меню -->
-    <ul>
-      <li><a href='index.php'>Домой</a></li>
-      <li><a href='about.php'>О нас</a></li>
-      <li><a href='contact.php'>Контакты</a></li>
-      <li><a href='table.php'>Таблица умножения</a></li>
-      <li><a href='calc.php'>Калькулятор</a></li>
-    </ul>
+    <?php
+    getMenu($menu);
+    ?>
     <!-- Меню -->
   </nav>
   <footer>
@@ -100,4 +73,5 @@
     <!-- Нижняя часть страницы -->
   </footer>
 </body>
+
 </html>

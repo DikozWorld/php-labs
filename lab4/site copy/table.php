@@ -1,18 +1,20 @@
 <?php
-// Метод POST и обработка запроса
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-    $cols = abs((int) $_POST['cols']);
-    $rows = abs((int) $_POST['rows']);
-    $color = trim(strip_tags($_POST['color']));
-}
 
-$cols = ($cols) ? $cols : 10;
-$rows = ($rows) ? $rows : 10;
-$color = ($color) ? $color : '#00c3ffff';
+session_start();
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+  $cols = abs((int) $_POST['cols']);
+  $rows = abs((int) $_POST['rows']);
+  $color = trim(strip_tags($_POST['color']));
+
+  $_SESSION['color'] = $color; // Сохранение выбранного цвета в сессии
+} else
+  $color = $_SESSION['color'] ?? '#ffff00'; //цвет из сессии
+
 ?>
 
 <!-- Область основного контента -->
-<form action='<?=$_SERVER['REQUEST_URI']?>' method="POST">
+<form action='<?= $_SERVER['REQUEST_URI'] ?>' method="POST">
   <label>Количество колонок: </label>
   <br>
   <input name='cols' type='text' value='<?= $cols ?>'>
@@ -25,7 +27,7 @@ $color = ($color) ? $color : '#00c3ffff';
   <br>
   <input name='color' type='color' value='<?= htmlspecialchars($color) ?>' list="listColors">
   <datalist id="listColors">
-    <option>#ff0000</option>
+    <option>#ff0000</option>/>
     <option>#00ff00</option>
     <option>#0000ff</option>
   </datalist>
