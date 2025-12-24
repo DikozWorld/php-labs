@@ -1,0 +1,7 @@
+<?php
+define('DB_HOST', 'localhost');
+define('DB_USER', 'f1193781'); // или другой логин БД
+define('DB_PASSWORD', 'твой_пароль_БД');
+define('DB_NAME', 'f1193781_login_db'); // точное имя БД
+define('DB_CHARSET', 'utf8mb4');
+?>
