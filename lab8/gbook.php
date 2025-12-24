@@ -1,126 +1,130 @@
 <?php
-declare(strict_types=1);
+/* ЗАДАНИЕ 1 - Подключение к БД */
+require_once 'config.php';
 
-/* ЗАДАНИЕ 1
-- Подключитесь к серверу MySQL, выберите базу данных
-- Установите кодировку по умолчанию для текущего соединения
-- Проверьте, была ли корректным образом отправлена форма
-- Если она была отправлена: отфильтруйте полученные данные 
-  с помощью функций trim(), htmlspecialchars() и mysqli_real_escape_string(),
-  сформируйте SQL-оператор на вставку данных в таблицу msgs и выполните его с помощью функции mysqli_query(). 
-  После этого с помощью функции header() выполните перезапрос страницы, 
-  чтобы избавиться от информации, переданной через форму
-*/
+// Подключение к базе данных
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASSWORD, DB_NAME);
 
-require_once 'config.php'; //db data
-$connection = mysqli_connect(HOST, USER, PASSWORD, DB);
-
-
-if (!$connection)
-  die("Ошибка подключения: " . mysqli_connect_error());
-
-mysqli_set_charset($connection, "utf8");
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  $name = trim(htmlspecialchars(mysqli_real_escape_string($connection, $_POST['name'] ?? '')));
-  $email = trim(htmlspecialchars(mysqli_real_escape_string($connection, $_POST['email'] ?? '')));
-  $msg = trim(htmlspecialchars(mysqli_real_escape_string($connection, $_POST['msg'] ?? '')));
-
-  // msgs insertion
-  $query = "INSERT INTO msgs (name, email, msg) VALUES ('$name', '$email', '$msg')";
-
-  if (mysqli_query($connection, $query)) {
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-  } else 
-    echo "Ошибка: " . mysqli_error($connection);
+// Проверка соединения
+if ($mysqli->connect_error) {
+    die("Ошибка подключения к базе данных: " . $mysqli->connect_error);
 }
 
-// del check
+// Установка кодировки
+$mysqli->set_charset(DB_CHARSET);
+
+/* ЗАДАНИЕ 1 - Приём данных от пользователя и вставка новой записи */
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['name'])) {
+    // Фильтрация данных
+    $name = trim(htmlspecialchars($_POST['name']));
+    $email = trim(htmlspecialchars($_POST['email']));
+    $msg = trim(htmlspecialchars($_POST['msg']));
+    
+    // Экранирование для SQL
+    $name = $mysqli->real_escape_string($name);
+    $email = $mysqli->real_escape_string($email);
+    $msg = $mysqli->real_escape_string($msg);
+    
+    // Проверка на пустые поля
+    if (!empty($name) && !empty($email) && !empty($msg)) {
+        // SQL запрос на вставку
+        $sql = "INSERT INTO msgs (name, email, msg, created_at) 
+                VALUES ('$name', '$email', '$msg', NOW())";
+        
+        if ($mysqli->query($sql)) {
+            // Перезапрос страницы для очистки POST данных
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
+        } else {
+            echo "<p style='color: red;'>Ошибка: " . $mysqli->error . "</p>";
+        }
+    } else {
+        echo "<p style='color: red;'>Все поля должны быть заполнены!</p>";
+    }
+}
+
+/* ЗАДАНИЕ 3 - Удаление записи */
 if (isset($_GET['delete_id'])) {
-
-  $delete_id = (int) $_GET['delete_id'];
-  $delquery = "DELETE FROM msgs WHERE id = $delete_id";
-  if (mysqli_query($connection, $delquery)) {
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit();
-
-  } else 
-    echo "Ошибка удаления: " . mysqli_error($connection);
+    $delete_id = (int)$_GET['delete_id'];
+    
+    if ($delete_id > 0) {
+        $sql = "DELETE FROM msgs WHERE id = $delete_id";
+        
+        if ($mysqli->query($sql)) {
+            // Перезапрос страницы
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
+        } else {
+            echo "<p style='color: red;'>Ошибка удаления: " . $mysqli->error . "</p>";
+        }
+    }
 }
-
-/*
-ЗАДАНИЕ 3
-- Проверьте, был ли запрос методом GET на удаление записи
-- Если он был: отфильтруйте полученные данные,
-  сформируйте SQL-оператор на удаление записи и выполните его.
-  После этого выполните перезапрос страницы, чтобы избавиться от информации, переданной методом GET
-*/
-
 ?>
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Гостевая книга</title>
+    <meta charset="UTF-8">
+    <title>Гостевая книга - Лабораторная 8</title>
 </head>
-
 <body>
-
-  <h1>Гостевая книга</h1>
-
-  <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-
-    Ваше имя:<br>
-    <input type="text" name="name" required><br>
-    Ваш E-mail:<br>
-    <input type="email" name="email" required><br>
-    Сообщение:<br>
-    <textarea name="msg" cols="50" rows="5" required></textarea><br>
-    <br>
-    <input type="submit" value="Добавить!">
-
-  </form>
-
-  <?php
-  /*
-  ЗАДАНИЕ 2
-  - Сформируйте SQL-оператор на выборку всех данных из таблицы
-    msgs в обратном порядке и выполните его. Результат выборки
-    сохраните в переменной.
-  - Закройте соединение с БД
-  -	С помощью функции mysqli_num_rows() получите количество рядов результата выборки и выведите его на экран
-  - В цикле функцией mysqli_fetch_assoc() получите очередной ряд результата выборки в виде ассоциативного массива.
-    Таким образом, используя этот цикл, выведите на экран все сообщения, а также информацию
-    об авторе каждого сообщения. После каджого сообщения сформируйте ссылку для удаления этой
-    записи. Информацию об идентификаторе удаляемого сообщения передавайте методом GET.
-  */
-
-  // msgs query
-  $query = "SELECT * FROM msgs ORDER BY id DESC";
-  $result = mysqli_query($connection, $query);
-
-  if ($result) {
-    echo "<h2>Сообщения</h2>";
-    $count = mysqli_num_rows($result);
-    echo "<p>Всего сообщений: $count</p>";
-
-    while ($row = mysqli_fetch_assoc($result)) {
-
-      echo "<div>";
-      echo "<p><strong>{$row['name']}</strong> ({$row['email']})</p>";
-      echo "<p>{$row['msg']}</p>";
-      echo "<a href='?delete_id={$row['id']}'>Удалить</a></div><hr>";
-
+    <h1>Гостевая книга</h1>
+    
+    <h2>Добавить сообщение</h2>
+    <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+        <label>Ваше имя:</label><br>
+        <input type="text" name="name" required><br><br>
+        
+        <label>Ваш E-mail:</label><br>
+        <input type="email" name="email" required><br><br>
+        
+        <label>Сообщение:</label><br>
+        <textarea name="msg" cols="50" rows="5" required></textarea><br><br>
+        
+        <input type="submit" value="Добавить">
+    </form>
+    
+    <hr>
+    
+    <h2>Сообщения</h2>
+    <?php
+    /* ЗАДАНИЕ 2 - Выборка данных из таблицы */
+    
+    // SQL запрос на выборку всех сообщений в обратном порядке
+    $sql = "SELECT * FROM msgs ORDER BY id DESC";
+    $result = $mysqli->query($sql);
+    
+    // Количество сообщений
+    $count = $result->num_rows;
+    echo "<p><strong>Всего сообщений: $count</strong></p>";
+    
+    // Выводим все сообщения
+    if ($count > 0) {
+        while ($row = $result->fetch_assoc()) {
+            echo "<div style='border: 1px solid #ccc; padding: 10px; margin: 10px 0;'>";
+            echo "<p><strong>Имя:</strong> " . htmlspecialchars($row['name']) . "</p>";
+            echo "<p><strong>Email:</strong> " . htmlspecialchars($row['email']) . "</p>";
+            echo "<p><strong>Сообщение:</strong><br>" . nl2br(htmlspecialchars($row['msg'])) . "</p>";
+            
+            if (isset($row['created_at'])) {
+                echo "<p><small>Дата: " . $row['created_at'] . "</small></p>";
+            }
+            
+            // Ссылка для удаления
+            echo "<a href='" . $_SERVER['PHP_SELF'] . "?delete_id=" . $row['id'] . "' 
+                  onclick='return confirm(\"Удалить это сообщение?\")'>
+                  Удалить</a>";
+            
+            echo "</div>";
+        }
+    } else {
+        echo "<p>Сообщений пока нет.</p>";
     }
-  } else
-    echo "<p>Ошибка при выборке данных: " . mysqli_error($connection) . "</p>";
-
-  mysqli_close($connection);
-  ?>
-
+    
+    // Закрываем соединение с БД
+    $mysqli->close();
+    ?>
+    
+    <hr>
+    <p>База данных: <?php echo DB_NAME; ?></p>
 </body>
 </html>
