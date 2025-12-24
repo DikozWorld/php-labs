@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-namespace MyProject\Classes;
+namespace src\Classes;
 
 require_once 'User.php';
 

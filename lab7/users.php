@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use MyProject\Classes\User;
-use MyProject\Classes\SuperUser;
+use src\Classes\User;
+use src\Classes\SuperUser;
 
 spl_autoload_register(function ($class): void {
     $file = __DIR__ . '/' . str_replace('\\', '/', $class) . '.php';
@@ -22,15 +22,15 @@ echo "<!DOCTYPE html>
 </head>
 <body>";
 
-$user1 = new User("Вова", "vladimir123", "password1");
-$user2 = new User("Андрей", "adreww", "password2");
-$user3 = new User("Сергей", "serj228", "password3");
+$user1 = new User("Дмитрий", "whoisit", "12kksskd3");
+$user2 = new User("Даниил", "bigbro", "123456");
+$user3 = new User("Евгений", "garif", "sfsef22");
 
 echo $user1->showInfo();
 echo $user2->showInfo();
 echo $user3->showInfo();
 
-$user = new SuperUser("Admin", "mega_admin", "password4", "administrator");
+$user = new SuperUser("Админ", "god", "123456ohno", "administrator");
 echo $user->showInfo();
 
 unset($user1);
